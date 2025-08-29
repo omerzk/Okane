@@ -22,6 +22,7 @@ class CouponStore: ObservableObject {
     @Published var showUsedCoupons = false // Default to hiding used coupons
     @Published var retryableError: String?
     @Published var retryingCoupon: String?
+    @Published var recentlyDeleted: [(coupon: Coupon, deletedAt: Date)] = []
     
     private let userDefaults = UserDefaults.standard
     private let couponsKey = "saved_coupons"
@@ -41,6 +42,66 @@ class CouponStore: ObservableObject {
     
     var usedValue: Double {
         return coupons.filter { $0.isUsed }.reduce(0) { $0 + $1.value }
+    }
+    
+    // Analytics properties
+    var totalSavings: Double {
+        return usedValue // Money saved by using coupons
+    }
+    
+    var averageCouponValue: Double {
+        guard !coupons.isEmpty else { return 0 }
+        return totalValue / Double(coupons.count)
+    }
+    
+    var usageEfficiency: Double {
+        guard totalValue > 0 else { return 0 }
+        return (usedValue / totalValue) * 100 // Percentage of coupons used
+    }
+    
+    var couponsUsedThisMonth: Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        
+        return coupons.filter { coupon in
+            coupon.isUsed && coupon.dateAdded >= startOfMonth
+        }.count
+    }
+    
+    var couponsAddedThisMonth: Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        
+        return coupons.filter { $0.dateAdded >= startOfMonth }.count
+    }
+    
+    var savingsThisMonth: Double {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        
+        return coupons.filter { coupon in
+            coupon.isUsed && coupon.dateAdded >= startOfMonth
+        }.reduce(0) { $0 + $1.value }
+    }
+    
+    var mostActiveDay: String {
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEEE" // Full day name
+        
+        // Group coupons by day of week
+        let dayGroups = Dictionary(grouping: coupons) { coupon in
+            dayFormatter.string(from: coupon.dateAdded)
+        }
+        
+        // Find day with most coupons
+        guard let mostActiveDay = dayGroups.max(by: { $0.value.count < $1.value.count })?.key else {
+            return "No data"
+        }
+        
+        return mostActiveDay
     }
     
     init() {
@@ -320,8 +381,31 @@ class CouponStore: ObservableObject {
     }
     
     func deleteCoupon(_ coupon: Coupon) {
+        // Add to recently deleted with timestamp
+        recentlyDeleted.append((coupon: coupon, deletedAt: Date()))
+        
+        // Remove from main list
         coupons.removeAll { $0.id == coupon.id }
         saveCoupons()
+        
+        // Auto-cleanup after 10 seconds
+        Task {
+            try await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+            await MainActor.run {
+                cleanupRecentlyDeleted()
+            }
+        }
+    }
+    
+    func undoDelete() {
+        guard let lastDeleted = recentlyDeleted.popLast() else { return }
+        coupons.append(lastDeleted.coupon)
+        saveCoupons()
+    }
+    
+    private func cleanupRecentlyDeleted() {
+        let cutoff = Date().addingTimeInterval(-10) // 10 seconds ago
+        recentlyDeleted.removeAll { $0.deletedAt < cutoff }
     }
     
     private func saveCoupons() {

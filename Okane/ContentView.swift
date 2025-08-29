@@ -17,6 +17,7 @@ struct ContentView: View {
     @StateObject private var store = CouponStore()
     @State private var showingAddCoupon = false
     @State private var showingBulkImport = false
+    @State private var showingStats = false
     @State private var searchText = ""
     @State private var optimizationResults: [Coupon] = []
     @State private var optimizationTarget: Double = 0
@@ -204,10 +205,16 @@ struct ContentView: View {
             .sheet(isPresented: $showingBulkImport) {
                 BulkImportView(store: store)
             }
+            .sheet(isPresented: $showingStats) {
+                StatsView(store: store)
+            }
             .overlay {
                 if store.isLoading {
                     LoadingView()
                 }
+            }
+            .overlay {
+                UndoToastView(store: store)
             }
             .alert("Error", isPresented: .constant(store.errorMessage != nil)) {
                 Button("OK") {
@@ -271,6 +278,10 @@ struct ContentView: View {
                     
                     Button(action: { showingBulkImport = true }) {
                         Label("Bulk Import", systemImage: "square.and.arrow.down.on.square")
+                    }
+                    
+                    Button(action: { showingStats = true }) {
+                        Label("Statistics", systemImage: "chart.pie.fill")
                     }
                     
                     Divider()
