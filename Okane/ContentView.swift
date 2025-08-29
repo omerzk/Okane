@@ -1158,9 +1158,9 @@ struct CouponRowView: View {
                 }
             }
         )
-        // Keep used coupons clickable and visually distinct with subtle effects
-        .saturation(coupon.isUsed ? 0.8 : 1.0) // Increased from 0.5 to 0.8 for better touch recognition
-        .opacity(coupon.isUsed ? 0.9 : 1.0)    // Increased from 0.8 to 0.9 for better touch recognition
+        // Reduced visual effects for used coupons - keep them clickable
+        .saturation(coupon.isUsed ? 0.5 : 1.0)
+        .opacity(coupon.isUsed ? 0.8 : 1.0)
         .scaleEffect(coupon.isUsed ? 0.98 : 1.0)
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: coupon.isUsed)
         .contentShape(Rectangle())
