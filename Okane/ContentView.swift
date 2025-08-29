@@ -773,13 +773,20 @@ struct ContentView: View {
                                         .padding(.bottom, 16)
                                     }
                                     
+                                    // Scroll offset tracking GeometryReader - moved outside LazyVStack to avoid interference
+                                    GeometryReader { geometry in
+                                        Color.clear
+                                            .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minY)
+                                    }
+                                    .frame(height: 0) // Make it non-intrusive
+
                                     // Coupons list with smooth filtering transitions
                                     LazyVStack(spacing: 12) {
                                         ForEach(filteredCoupons.indices, id: \.self) { index in
                                             CouponRowView(coupon: filteredCoupons[index], store: store) {
                                                 // Remove used coupons from optimization results
                                                 optimizationResults = optimizationResults.filter { !$0.isUsed }
-                                                
+
                                                 // If all coupons in the optimization are now used, clear the results
                                                 if optimizationResults.isEmpty && optimizationTarget > 0 {
                                                     clearOptimization()
@@ -791,17 +798,11 @@ struct ContentView: View {
                                                 removal: .scale(scale: 0.9).combined(with: .opacity).combined(with: .move(edge: .leading))
                                             ))
                                         }
-                                        
+
                                         Color.clear
                                             .frame(height: 80)
                                     }
                                     .animation(.spring(response: 0.6, dampingFraction: 0.8), value: store.showUsedCoupons)
-                                    .background(
-                                        GeometryReader { geometry in
-                                            Color.clear
-                                                .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minY)
-                                        }
-                                    )
                                 }
                             }
                             .coordinateSpace(name: "scroll")
