@@ -721,123 +721,123 @@ struct ContentView: View {
     }
     
     var body: some View {
-NavigationView {
-ScrollView {
-   ZStack(alignment: .top) {
-       // Background layers
-       ZStack {
-           Color.okamiParchment
-               .ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                // Okami-style textured background
+                ZStack {
+                    Color.okamiParchment
+                        .ignoresSafeArea()
 
-           OrganiqueShape(variant: 1)
-               .fill(
-                   LinearGradient(
-                       colors: [
-                           Color.okamiGold.opacity(0.08),
-                           Color.okamiAmber.opacity(0.06),
-                           Color.okamiEarth.opacity(0.04)
-                       ],
-                       startPoint: .topLeading,
-                       endPoint: .bottomTrailing
-                   )
-               )
-               .rotationEffect(.degrees(-15))
-               .scaleEffect(1.2)
-       }
+                    OrganiqueShape(variant: 1)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.okamiGold.opacity(0.08),
+                                    Color.okamiAmber.opacity(0.06),
+                                    Color.okamiEarth.opacity(0.04)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .rotationEffect(.degrees(-15))
+                        .scaleEffect(1.2)
+                }
 
-       VStack(spacing: 0) {
-           if store.coupons.isEmpty {
-               Spacer()
-               EmptyStateView()
-               Spacer()
-           } else {
-               VStack(spacing: 0) {
-                   // Main scrollable content
-                   VStack(spacing: 0) {
-                       // Full header
-                       CollapsibleStatsHeaderView(
-                           store: store,
-                           displayedCoupons: filteredCoupons,
-                           height: headerHeight,
-                           scrollOffset: scrollOffset
-                       )
-                       .padding(.horizontal, 20)
+                VStack(spacing: 0) {
+                    if store.coupons.isEmpty {
+                        Spacer()
+                        EmptyStateView()
+                        Spacer()
+                    } else {
+                        VStack(spacing: 0) {
+                            // Main scrollable content
+                            ScrollView {
+                                VStack(spacing: 0) {
+                                    // Full header
+                                    CollapsibleStatsHeaderView(
+                                        store: store,
+                                        displayedCoupons: filteredCoupons,
+                                        height: headerHeight,
+                                        scrollOffset: scrollOffset
+                                    )
+                                    .padding(.horizontal, 20)
 
-                       // Optimization header when showing search results
-                       if !optimizationResults.isEmpty {
-                           OptimizationHeaderView(
-                               target: optimizationTarget,
-                               suggestions: optimizationResults
-                           )
-                           .padding(.horizontal, 20)
-                           .padding(.bottom, 16)
-                       }
+                                    // Optimization header when showing search results
+                                    if !optimizationResults.isEmpty {
+                                        OptimizationHeaderView(
+                                            target: optimizationTarget,
+                                            suggestions: optimizationResults
+                                        )
+                                        .padding(.horizontal, 20)
+                                        .padding(.bottom, 16)
+                                    }
 
-                       // Scroll offset tracking GeometryReader - moved outside LazyVStack to avoid interference
-                       GeometryReader { geometry in
-                           Color.clear
-                               .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minY)
-                       }
-                       .frame(height: 0) // Make it non-intrusive
+                                    // Scroll offset tracking GeometryReader
+                                    GeometryReader { geometry in
+                                        Color.clear
+                                            .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minY)
+                                    }
+                                    .frame(height: 0)
 
-                       // Coupons list with smooth filtering transitions
-                       LazyVStack(spacing: 12) {
-                           ForEach(filteredCoupons.indices, id: \.self) { index in
-                               CouponRowView(coupon: filteredCoupons[index], store: store) {
-                                   // Remove used coupons from optimization results
-                                   optimizationResults = optimizationResults.filter { !$0.isUsed }
+                                    // Coupons list with smooth filtering transitions
+                                    LazyVStack(spacing: 12) {
+                                        ForEach(filteredCoupons.indices, id: \.self) { index in
+                                            CouponRowView(coupon: filteredCoupons[index], store: store) {
+                                                // Remove used coupons from optimization results
+                                                optimizationResults = optimizationResults.filter { !$0.isUsed }
 
-                                   // If all coupons in the optimization are now used, clear the results
-                                   if optimizationResults.isEmpty && optimizationTarget > 0 {
-                                       clearOptimization()
-                                   }
-                               }
-                               .padding(.horizontal, 20)
-                               .transition(.asymmetric(
-                                   insertion: .scale(scale: 0.8).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                                   removal: .scale(scale: 0.9).combined(with: .opacity).combined(with: .move(edge: .leading))
-                               ))
-                           }
+                                                // If all coupons in the optimization are now used, clear the results
+                                                if optimizationResults.isEmpty && optimizationTarget > 0 {
+                                                    clearOptimization()
+                                                }
+                                            }
+                                            .padding(.horizontal, 20)
+                                            .transition(.asymmetric(
+                                                insertion: .scale(scale: 0.8).combined(with: .opacity).combined(with: .move(edge: .bottom)),
+                                                removal: .scale(scale: 0.9).combined(with: .opacity).combined(with: .move(edge: .leading))
+                                            ))
+                                        }
 
-                           Color.clear
-                               .frame(height: 80)
-                       }
-                       .animation(.spring(response: 0.6, dampingFraction: 0.8), value: store.showUsedCoupons)
-                   }
-               }
-               .searchable(text: $searchText, prompt: "How much?")
-               .onSubmit(of: .search) {
-                   performOptimization()
-               }
-               .onChange(of: searchText) { oldValue, newValue in
-                   // If search text becomes empty (cancel pressed), clear optimization
-                   if newValue.isEmpty {
-                       clearOptimization()
-                       return
-                   }
+                                        Color.clear
+                                            .frame(height: 80)
+                                    }
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: store.showUsedCoupons)
+                                }
+                            }
+                            .coordinateSpace(name: "scroll")
+                            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                                scrollOffset = max(0, -value + 100.0)
+                            }
+                        }
+                        .searchable(text: $searchText, prompt: "How much?")
+                        .onSubmit(of: .search) {
+                            performOptimization()
+                        }
+                        .onChange(of: searchText) { oldValue, newValue in
+                            // If search text becomes empty (cancel pressed), clear optimization
+                            if newValue.isEmpty {
+                                clearOptimization()
+                                return
+                            }
 
-                   // Clear results when user starts typing again
-                   if !newValue.isEmpty && newValue != oldValue {
-                       clearOptimization()
-                   }
+                            // Clear results when user starts typing again
+                            if !newValue.isEmpty && newValue != oldValue {
+                                clearOptimization()
+                            }
 
-                   // Filter input to only allow positive numbers and ₪ symbol
-                   let filtered = newValue.filter { char in
-                       char.isNumber || char == "." || char == "₪"
-                   }
+                            // Filter input to only allow positive numbers and ₪ symbol
+                            let filtered = newValue.filter { char in
+                                char.isNumber || char == "." || char == "₪"
+                            }
 
-                   if filtered != newValue {
-                       searchText = filtered
-                   }
-               }
-           }
-       }
-   }
-}
-.coordinateSpace(name: "scroll")
-.onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-   scrollOffset = max(0, -value + 100.0)
-}
+                            if filtered != newValue {
+                                searchText = filtered
+                            }
+                        }
+                    }
+                }
+            }
             .navigationTitle("Okane")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(.dark, for: .navigationBar)
