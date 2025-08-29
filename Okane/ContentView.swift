@@ -316,7 +316,7 @@ struct ContentView: View {
     }
     
     var scrollViewContent: some View {
-        VStack(spacing: 0) {
+        List {
             // Full header
             CollapsibleStatsHeaderView(
                 store: store,
@@ -325,6 +325,9 @@ struct ContentView: View {
                 scrollOffset: scrollOffset
             )
             .padding(.horizontal, 20)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets())
 
             // Optimization header when showing search results
             if !optimizationResults.isEmpty {
@@ -334,81 +337,83 @@ struct ContentView: View {
                 )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
             }
 
-            // Scroll offset tracking GeometryReader
+            // Scroll offset tracking
             GeometryReader { geometry in
                 Color.clear
-                    .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minY)
+                    .preference(
+                        key: ScrollOffsetPreferenceKey.self,
+                        value: geometry.frame(in: .named("scroll")).minY
+                    )
             }
             .frame(height: 0)
+            .padding(.bottom, -12)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets())
 
-            // Coupons list with smooth filtering transitions
-            couponsList
-        }
-    }
-    
-    var couponsList: some View {
-        LazyVStack(spacing: 12) {
+            // Coupons list
             ForEach(filteredCoupons, id: \.id) { coupon in
                 CouponRowView(coupon: coupon, store: store) {
-                    // Remove used coupons from optimization results
                     optimizationResults = optimizationResults.filter { !$0.isUsed }
-
-                    // If all coupons in the optimization are now used, clear the results
                     if optimizationResults.isEmpty && optimizationTarget > 0 {
                         clearOptimization()
                     }
                 }
                 .padding(.horizontal, 20)
-                .transition(.asymmetric(
-                    insertion: .scale(scale: 0.8).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                    removal: .scale(scale: 0.9).combined(with: .opacity).combined(with: .move(edge: .leading))
-                ))
+                .padding(.bottom, 12)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
             }
 
+            // Spacer at bottom
             Color.clear
                 .frame(height: 80)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .coordinateSpace(name: "scroll")
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+            scrollOffset = max(0, -value + 100.0)
+        }
+        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: store.showUsedCoupons)
     }
 
     var scrollableContentView: some View {
-        VStack(spacing: 0) {
-            // Main scrollable content
-            ScrollView {
-                scrollViewContent
-                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: store.showUsedCoupons)
+        scrollViewContent
+            .searchable(text: $searchText, prompt: "How much?")
+            .onSubmit(of: .search) {
+                performOptimization()
             }
-            .coordinateSpace(name: "scroll")
-            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                scrollOffset = max(0, -value + 100.0)
-            }
-        }
-        .searchable(text: $searchText, prompt: "How much?")
-        .onSubmit(of: .search) {
-            performOptimization()
-        }
-        .onChange(of: searchText) { oldValue, newValue in
-            // If search text becomes empty (cancel pressed), clear optimization
-            if newValue.isEmpty {
-                clearOptimization()
-                return
-            }
+            .onChange(of: searchText) { oldValue, newValue in
+                // If search text becomes empty (cancel pressed), clear optimization
+                if newValue.isEmpty {
+                    clearOptimization()
+                    return
+                }
 
-            // Clear results when user starts typing again
-            if !newValue.isEmpty && newValue != oldValue {
-                clearOptimization()
-            }
+                // Clear results when user starts typing again
+                if !newValue.isEmpty && newValue != oldValue {
+                    clearOptimization()
+                }
 
-            // Filter input to only allow positive numbers and ₪ symbol
-            let filtered = newValue.filter { char in
-                char.isNumber || char == "." || char == "₪"
-            }
+                // Filter input to only allow positive numbers and ₪ symbol
+                let filtered = newValue.filter { char in
+                    char.isNumber || char == "." || char == "₪"
+                }
 
-            if filtered != newValue {
-                searchText = filtered
+                if filtered != newValue {
+                    searchText = filtered
+                }
             }
-        }
     }
 }
 
