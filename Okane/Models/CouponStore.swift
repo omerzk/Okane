@@ -32,11 +32,11 @@ class CouponStore: ObservableObject {
         }
     
     var totalValue: Double {
-        return filteredCoupons.reduce(0) { $0 + $1.value }
+        return coupons.reduce(0) { $0 + $1.value }
     }
     
     var unusedValue: Double {
-        return filteredCoupons.filter { !$0.isUsed }.reduce(0) { $0 + $1.value }
+        return coupons.filter { !$0.isUsed }.reduce(0) { $0 + $1.value }
     }
     
     var usedValue: Double {
