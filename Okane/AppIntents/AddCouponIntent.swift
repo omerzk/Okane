@@ -8,15 +8,30 @@ struct AddCouponIntent: AppIntent {
     var messageText: String
     
     func perform() async throws -> some IntentResult {
-            let store = CouponStore()
-            
-            await store.addCoupon(from: messageText)
-            
-//            if store.errorMessage != nil {
-//                throw $messageText.needsValueError("Failed to add coupon: \(store.errorMessage ?? "Unknown error")")
-//            }
-            
-            return .result(dialog: "Coupon added successfully!")
+        let store = CouponStore()
+        
+        // Clear any existing error state
+        await MainActor.run {
+            store.errorMessage = nil
+            store.retryableError = nil
+        }
+        
+        // Perform the coupon addition and wait for completion
+        await store.addCoupon(from: messageText)
+        
+        // Wait a brief moment for any async operations to complete
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        
+        // Check for any errors after operation completion
+        let errorMessage = await MainActor.run {
+            store.errorMessage ?? store.retryableError
+        }
+        
+        if let error = errorMessage {
+            throw $messageText.needsValueError("Failed to add coupon: \(error)")
+        }
+        
+        return .result(dialog: "Coupon successfully added to Okane!")
     }
 }
 
