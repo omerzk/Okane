@@ -23,7 +23,7 @@ struct CollapsibleStatsHeaderView: View {
                         .tracking(2.5)
                 }
                 
-                Text(String(format: "₪%.0f", store.unusedValue))
+                Text(store.showTotals ? String(format: "₪%.0f", store.unusedValue) : "₪∞")
                     .font(.system(size: isCollapsed ? 28 : 48, weight: .heavy, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
@@ -60,7 +60,7 @@ struct CollapsibleStatsHeaderView: View {
                 // Clean stats grid
                 HStack(spacing: 0) {
                     VStack(spacing: 8) {
-                        Text(String(format: "₪%.0f", store.totalValue))
+                        Text(store.showTotals ? String(format: "₪%.0f", store.totalValue) : "₪∞")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.textPrimary)
                         Text("Total")
@@ -76,7 +76,7 @@ struct CollapsibleStatsHeaderView: View {
                         .frame(width: 1, height: 40)
                     
                     VStack(spacing: 8) {
-                        Text(String(format: "₪%.0f", store.usedValue))
+                        Text(store.showTotals ? String(format: "₪%.0f", store.usedValue) : "₪∞")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.textSecondary)
                         Text("Used")
@@ -92,7 +92,7 @@ struct CollapsibleStatsHeaderView: View {
                         .frame(width: 1, height: 40)
                     
                     VStack(spacing: 8) {
-                        Text("\(displayedCoupons.count)")
+                        Text(store.showTotals ? "\(displayedCoupons.count)" : "∞")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.warmBlue)
                         Text("Coupons")

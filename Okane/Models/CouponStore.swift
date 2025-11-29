@@ -24,8 +24,14 @@ class CouponStore: ObservableObject {
     @Published var retryingCoupon: String?
     @Published var recentlyDeleted: [(coupon: Coupon, deletedAt: Date)] = []
     
+    // UI state management
+    @Published var isDarkMode = false
+    @Published var showTotals = true // Default to showing values (not censored)
+    
     private let userDefaults = UserDefaults.standard
     private let couponsKey = "saved_coupons"
+    private let darkModeKey = "dark_mode_preference"
+    private let showTotalsKey = "show_totals_preference"
     
     var filteredCoupons: [Coupon] {
             let baseFiltered = showUsedCoupons ? coupons : coupons.filter { !$0.isUsed }
@@ -110,6 +116,8 @@ class CouponStore: ObservableObject {
             userDefaults.set("v2", forKey: "structure_version")
         }
         loadCoupons()
+        loadDarkModePreference()
+        loadShowTotalsPreference()
     }
     
     func addCoupon(from message: String) async {
@@ -424,5 +432,36 @@ class CouponStore: ObservableObject {
             print("Failed to decode saved coupons, starting fresh: \(error)")
             coupons = []
         }
+    }
+    
+    // MARK: - Dark Mode Management
+    private func loadDarkModePreference() {
+        isDarkMode = userDefaults.bool(forKey: darkModeKey)
+    }
+    
+    private func saveDarkModePreference() {
+        userDefaults.set(isDarkMode, forKey: darkModeKey)
+    }
+    
+    func toggleDarkMode() {
+        isDarkMode.toggle()
+        saveDarkModePreference()
+    }
+    
+    // MARK: - Show Totals Management
+    private func loadShowTotalsPreference() {
+        // Default to true if no preference is saved
+        if userDefaults.object(forKey: showTotalsKey) != nil {
+            showTotals = userDefaults.bool(forKey: showTotalsKey)
+        }
+    }
+    
+    private func saveShowTotalsPreference() {
+        userDefaults.set(showTotals, forKey: showTotalsKey)
+    }
+    
+    func toggleShowTotals() {
+        showTotals.toggle()
+        saveShowTotalsPreference()
     }
 }

@@ -18,7 +18,7 @@ struct BulkImportView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Bulk Import to Okane")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.textPrimary)
+                            .foregroundColor(.buttonTextOnColor)
                         
                         Text("Import coupons from text or file. Format: 'YYYY-MM-DD HH:MM:SS|message|USED' or plain messages.")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -34,7 +34,7 @@ struct BulkImportView: View {
                                 Text("Import from File")
                                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(.buttonTextOnColor)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(
@@ -97,7 +97,7 @@ struct BulkImportView: View {
                                 
                                 TextField("", text: $importText, axis: .vertical)
                                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                    .foregroundColor(.textPrimary)
+                                    .foregroundColor(.buttonTextOnColor)
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 20)
                                     .lineLimit(8...25)
@@ -181,7 +181,7 @@ struct BulkImportView: View {
                         }
                         .disabled(importText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.isLoading)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(.buttonTextOnColor)
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .background(

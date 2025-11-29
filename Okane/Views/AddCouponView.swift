@@ -127,7 +127,7 @@ struct AddCouponView: View {
                     }
                     .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.isLoading)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.buttonTextOnColor)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity)
                     .background(

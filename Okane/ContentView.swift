@@ -201,12 +201,15 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingAddCoupon) {
                 AddCouponView(store: store)
+                    .preferredColorScheme(store.isDarkMode ? .dark : .light)
             }
             .sheet(isPresented: $showingBulkImport) {
                 BulkImportView(store: store)
+                    .preferredColorScheme(store.isDarkMode ? .dark : .light)
             }
             .sheet(isPresented: $showingStats) {
                 StatsView(store: store)
+                    .preferredColorScheme(store.isDarkMode ? .dark : .light)
             }
             .overlay {
                 if store.isLoading {
@@ -245,6 +248,7 @@ struct ContentView: View {
         .onChange(of: store.showUsedCoupons) { _, _ in
             updateFilteredCoupons()
         }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
     }
     
     var toolbarContent: some ToolbarContent {
@@ -294,6 +298,28 @@ struct ContentView: View {
                         Label(
                             store.showUsedCoupons ? "Hide Used" : "Show Used",
                             systemImage: store.showUsedCoupons ? "eye.slash.fill" : "eye.fill"
+                        )
+                    }
+                    
+                    Button(action: {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            store.toggleDarkMode()
+                        }
+                    }) {
+                        Label(
+                            store.isDarkMode ? "Light Mode" : "Dark Mode",
+                            systemImage: store.isDarkMode ? "sun.max.fill" : "moon.fill"
+                        )
+                    }
+                    
+                    Button(action: {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            store.toggleShowTotals()
+                        }
+                    }) {
+                        Label(
+                            store.showTotals ? "Hide Values" : "Show Values",
+                            systemImage: store.showTotals ? "lock.fill" : "lock.open.fill"
                         )
                     }
                 } label: {

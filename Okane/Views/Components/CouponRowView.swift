@@ -88,6 +88,7 @@ struct CouponRowView: View {
         }
         .sheet(isPresented: $showingBarcode) {
             BarcodeView(coupon: coupon, store: store, onToggleUsed: onToggleUsed)
+                .preferredColorScheme(store.isDarkMode ? .dark : .light)
         }
     }
 }
