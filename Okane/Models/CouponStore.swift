@@ -164,13 +164,14 @@ class CouponStore: ObservableObject {
         }
     }
     
-    /// Used by App Intents - throws errors directly instead of setting @Published properties
+    /// Used by App Intents - throws errors directly instead of setting @Published properties.
+    /// Uses MainActor.run for all @Published property access to ensure thread safety in background execution.
     func addCouponFromIntent(message: String) async throws {
         guard let url = extractURL(from: message) else {
             throw CouponError.invalidURL
         }
         
-        // Check for duplicate URL
+        // Check for duplicate URL (MainActor.run for thread-safe @Published access)
         let isDuplicate = await MainActor.run {
             coupons.contains(where: { $0.url == url })
         }
@@ -182,7 +183,7 @@ class CouponStore: ObservableObject {
             try await self.fetchCouponData(from: url, originalMessage: message)
         }
         
-        // Double-check for duplicate barcode after fetching
+        // Double-check for duplicate barcode after fetching (MainActor.run for thread-safe @Published access)
         let isDuplicateBarcode = await MainActor.run {
             coupons.contains(where: { $0.barcodeNumber == coupon.barcodeNumber })
         }
