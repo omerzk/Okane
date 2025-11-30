@@ -164,6 +164,38 @@ class CouponStore: ObservableObject {
         }
     }
     
+    /// Used by App Intents - throws errors directly instead of setting @Published properties
+    func addCouponFromIntent(message: String) async throws {
+        guard let url = extractURL(from: message) else {
+            throw CouponError.invalidURL
+        }
+        
+        // Check for duplicate URL
+        let isDuplicate = await MainActor.run {
+            coupons.contains(where: { $0.url == url })
+        }
+        if isDuplicate {
+            throw CouponError.duplicateCoupon
+        }
+        
+        let coupon = try await NetworkRetryHelper.performWithRetry {
+            try await self.fetchCouponData(from: url, originalMessage: message)
+        }
+        
+        // Double-check for duplicate barcode after fetching
+        let isDuplicateBarcode = await MainActor.run {
+            coupons.contains(where: { $0.barcodeNumber == coupon.barcodeNumber })
+        }
+        if isDuplicateBarcode {
+            throw CouponError.duplicateCoupon
+        }
+        
+        await MainActor.run {
+            coupons.append(coupon)
+            saveCoupons()
+        }
+    }
+    
     func retryCoupon() async {
         guard let message = retryingCoupon else { return }
         await addCoupon(from: message)
