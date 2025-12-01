@@ -10,28 +10,17 @@ struct AddCouponIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let store = CouponStore()
         
-        // Clear any existing error state
-        await MainActor.run {
-            store.errorMessage = nil
-            store.retryableError = nil
+        do {
+            try await store.addCouponFromIntent(message: messageText)
+            return .result(dialog: "Coupon successfully added to Okane!")
+        } catch CouponError.duplicateCoupon {
+            // Duplicate is not really a failure - the coupon exists
+            return .result(dialog: "This coupon was already in your wallet.")
+        } catch CouponError.invalidURL {
+            throw $messageText.needsValueError("No valid coupon URL found in the message.")
+        } catch {
+            throw $messageText.needsValueError("Failed to add coupon: \(error.localizedDescription)")
         }
-        
-        // Perform the coupon addition and wait for completion
-        await store.addCoupon(from: messageText)
-        
-        // Wait a brief moment for any async operations to complete
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-        
-        // Check for any errors after operation completion
-        let errorMessage = await MainActor.run {
-            store.errorMessage ?? store.retryableError
-        }
-        
-        if let error = errorMessage {
-            throw $messageText.needsValueError("Failed to add coupon: \(error)")
-        }
-        
-        return .result(dialog: "Coupon successfully added to Okane!")
     }
 }
 
