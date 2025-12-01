@@ -165,7 +165,7 @@ class CouponStore: ObservableObject {
     }
     
     /// Used by App Intents - throws errors directly instead of setting @Published properties.
-    /// Uses MainActor.run for all @Published property access to ensure thread safety in background execution.
+    /// Uses MainActor.run for all @Published property access and graphics operations to ensure thread safety.
     func addCouponFromIntent(message: String) async throws {
         guard let url = extractURL(from: message) else {
             throw CouponError.invalidURL
@@ -180,7 +180,7 @@ class CouponStore: ObservableObject {
         }
         
         let coupon = try await NetworkRetryHelper.performWithRetry {
-            try await self.fetchCouponData(from: url, originalMessage: message)
+            try await self.fetchCouponDataForIntent(from: url, originalMessage: message)
         }
         
         // Double-check for duplicate barcode after fetching (MainActor.run for thread-safe @Published access)
@@ -195,6 +195,44 @@ class CouponStore: ObservableObject {
             coupons.append(coupon)
             saveCoupons()
         }
+    }
+    
+    /// Fetches coupon data with MainActor for graphics operations (required for background App Intents)
+    private func fetchCouponDataForIntent(from urlString: String, originalMessage: String) async throws -> Coupon {
+        guard let url = URL(string: urlString) else {
+            throw CouponError.invalidURL
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let html = String(data: data, encoding: .utf8) else {
+            throw CouponError.invalidHTML
+        }
+        
+        guard let barcodeInfo = extractBarcodeInfo(from: html) else {
+            throw CouponError.barcodeNotFound
+        }
+        
+        // Graphics operations must run on MainActor for background App Intents
+        let barcodeImageData: Data = try await MainActor.run {
+            guard let generatedBarcode = generateBarcode(from: barcodeInfo.number, scale: 3.0) else {
+                throw CouponError.barcodeNotFound
+            }
+            guard let imageData = generatedBarcode.pngData() else {
+                throw CouponError.barcodeNotFound
+            }
+            return imageData
+        }
+        
+        let value = extractValue(from: originalMessage)
+        
+        return Coupon(
+            url: urlString,
+            barcodeNumber: barcodeInfo.number,
+            barcodeImageData: barcodeImageData,
+            dateAdded: Date(),
+            value: value,
+            originalMessage: originalMessage.isEmpty ? nil : originalMessage
+        )
     }
     
     func retryCoupon() async {
