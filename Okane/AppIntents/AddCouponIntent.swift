@@ -1,26 +1,30 @@
 import AppIntents
+import UserNotifications
 
 struct AddCouponIntent: AppIntent {
     static var title: LocalizedStringResource = "Add Coupon from SMS"
     static var description = IntentDescription("Automatically add a coupon from an SMS message")
-    
+
     @Parameter(title: "SMS Message")
     var messageText: String
-    
+
+    @MainActor
     func perform() async throws -> some IntentResult {
-        let store = CouponStore()
-        
-        do {
-            try await store.addCouponFromIntent(message: messageText)
-            return .result(dialog: "Coupon successfully added to Okane!")
-        } catch CouponError.duplicateCoupon {
-            // Duplicate is not really a failure - the coupon exists
-            return .result(dialog: "This coupon was already in your wallet.")
-        } catch CouponError.invalidURL {
+        // Use shared store instance to ensure app sees updates immediately
+        let store = CouponStore.shared
+
+        // Quick validation before queuing
+        guard store.extractURL(from: messageText) != nil else {
             throw $messageText.needsValueError("No valid coupon URL found in the message.")
-        } catch {
-            throw $messageText.needsValueError("Failed to add coupon: \(error.localizedDescription)")
         }
+
+        // Queue the work in background to avoid timeout
+        Task.detached(priority: .userInitiated) {
+            await store.addCouponInBackground(message: messageText)
+        }
+
+        // Return silently - user will get notification when complete
+        return .result()
     }
 }
 

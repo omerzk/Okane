@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UserNotifications
 
 // MARK: - Helper Actor for Thread-Safe Counting
 actor ActorCounter {
@@ -16,6 +17,8 @@ actor ActorCounter {
 
 // MARK: - Coupon Store
 class CouponStore: ObservableObject {
+    static let shared = CouponStore()
+
     @Published var coupons: [Coupon] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -23,11 +26,11 @@ class CouponStore: ObservableObject {
     @Published var retryableError: String?
     @Published var retryingCoupon: String?
     @Published var recentlyDeleted: [(coupon: Coupon, deletedAt: Date)] = []
-    
+
     // UI state management
     @Published var isDarkMode = false
     @Published var showTotals = true // Default to showing values (not censored)
-    
+
     private let userDefaults = UserDefaults.standard
     private let couponsKey = "saved_coupons"
     private let darkModeKey = "dark_mode_preference"
@@ -164,36 +167,85 @@ class CouponStore: ObservableObject {
         }
     }
     
-    /// Used by App Intents - throws errors directly instead of setting @Published properties.
-    /// Uses MainActor.run for all @Published property access to ensure thread safety in background execution.
-    func addCouponFromIntent(message: String) async throws {
+    /// Used by App Intents - processes coupon in background and sends notification when complete.
+    /// This avoids App Intent timeout issues with slow network requests.
+    func addCouponInBackground(message: String) async {
+        // Request notification permission if needed
+        await requestNotificationPermission()
+
         guard let url = extractURL(from: message) else {
-            throw CouponError.invalidURL
+            await sendNotification(title: "Invalid Coupon", body: "No valid coupon URL found in the message.")
+            return
         }
-        
-        // Check for duplicate URL (MainActor.run for thread-safe @Published access)
+
+        // Check for duplicate URL
         let isDuplicate = await MainActor.run {
             coupons.contains(where: { $0.url == url })
         }
         if isDuplicate {
-            throw CouponError.duplicateCoupon
+            await sendNotification(title: "Duplicate Coupon", body: "This coupon is already in your wallet.")
+            return
         }
-        
-        let coupon = try await NetworkRetryHelper.performWithRetry {
-            try await self.fetchCouponData(from: url, originalMessage: message)
+
+        do {
+            // Use standard retry strategy (not rushed) since we're in background
+            let coupon = try await NetworkRetryHelper.performWithRetry {
+                try await self.fetchCouponData(from: url, originalMessage: message)
+            }
+
+            // Double-check for duplicate barcode after fetching
+            let isDuplicateBarcode = await MainActor.run {
+                coupons.contains(where: { $0.barcodeNumber == coupon.barcodeNumber })
+            }
+            if isDuplicateBarcode {
+                await sendNotification(title: "Duplicate Coupon", body: "This coupon is already in your wallet.")
+                return
+            }
+
+            await MainActor.run {
+                coupons.append(coupon)
+                saveCoupons()
+            }
+
+            // Success notification with coupon value
+            let valueText = coupon.value > 0 ? "₪\(String(format: "%.2f", coupon.value))" : ""
+            await sendNotification(
+                title: "Coupon Added!",
+                body: "Successfully added \(valueText) coupon to Okane"
+            )
+        } catch {
+            await sendNotification(
+                title: "Failed to Add Coupon",
+                body: error.localizedDescription
+            )
         }
-        
-        // Double-check for duplicate barcode after fetching (MainActor.run for thread-safe @Published access)
-        let isDuplicateBarcode = await MainActor.run {
-            coupons.contains(where: { $0.barcodeNumber == coupon.barcodeNumber })
+    }
+
+    private func requestNotificationPermission() async {
+        let center = UNUserNotificationCenter.current()
+        do {
+            try await center.requestAuthorization(options: [.alert, .sound, .badge])
+        } catch {
+            print("Failed to request notification permission: \(error)")
         }
-        if isDuplicateBarcode {
-            throw CouponError.duplicateCoupon
-        }
-        
-        await MainActor.run {
-            coupons.append(coupon)
-            saveCoupons()
+    }
+
+    private func sendNotification(title: String, body: String) async {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // Deliver immediately
+        )
+
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+        } catch {
+            print("Failed to send notification: \(error)")
         }
     }
     
@@ -333,13 +385,13 @@ class CouponStore: ObservableObject {
         return results
     }
     
-    private func extractURL(from text: String) -> String? {
+    func extractURL(from text: String) -> String? {
         let pattern = #"https://[^\s]+"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) else {
             return nil
         }
-        
+
         let range = Range(match.range, in: text)!
         return String(text[range])
     }

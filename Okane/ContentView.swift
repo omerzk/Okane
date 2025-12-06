@@ -14,7 +14,7 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
 
 // MARK: - Enhanced Views with Okami Aesthetics
 struct ContentView: View {
-    @StateObject private var store = CouponStore()
+    @StateObject private var store = CouponStore.shared
     @State private var showingAddCoupon = false
     @State private var showingBulkImport = false
     @State private var showingStats = false
