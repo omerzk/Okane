@@ -262,6 +262,44 @@ class CouponStore: ObservableObject {
         }
     }
     
+    /// Fetches coupon data with MainActor for graphics operations (required for background App Intents)
+    private func fetchCouponDataForIntent(from urlString: String, originalMessage: String) async throws -> Coupon {
+        guard let url = URL(string: urlString) else {
+            throw CouponError.invalidURL
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let html = String(data: data, encoding: .utf8) else {
+            throw CouponError.invalidHTML
+        }
+        
+        guard let barcodeInfo = extractBarcodeInfo(from: html) else {
+            throw CouponError.barcodeNotFound
+        }
+        
+        // Graphics operations must run on MainActor for background App Intents
+        let barcodeImageData: Data = try await MainActor.run {
+            guard let generatedBarcode = generateBarcode(from: barcodeInfo.number, scale: 3.0) else {
+                throw CouponError.barcodeNotFound
+            }
+            guard let imageData = generatedBarcode.pngData() else {
+                throw CouponError.barcodeNotFound
+            }
+            return imageData
+        }
+        
+        let value = extractValue(from: originalMessage)
+        
+        return Coupon(
+            url: urlString,
+            barcodeNumber: barcodeInfo.number,
+            barcodeImageData: barcodeImageData,
+            dateAdded: Date(),
+            value: value,
+            originalMessage: originalMessage.isEmpty ? nil : originalMessage
+        )
+    }
+    
     func retryCoupon() async {
         guard let message = retryingCoupon else { return }
         await addCoupon(from: message)
