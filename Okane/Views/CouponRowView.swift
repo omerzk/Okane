@@ -21,11 +21,32 @@ struct CouponRowView: View {
                                 .rotationEffect(.degrees(-5))
                         }
                     }
-                
+
                 Text(coupon.dateAdded, style: .date)
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .foregroundColor(.textSecondary)
                     .tracking(0.5)
+
+                // Store badge
+                if let storeDisplayName = coupon.storeDisplayName,
+                   let storeName = coupon.storeName {
+                    let storeColors = StoreColorHelper.colorForStore(storeName)
+                    Text(storeDisplayName)
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundColor(storeColors.primary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [storeColors.primary.opacity(0.15), storeColors.secondary.opacity(0.15)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                }
             }
             .frame(width: 90)
             .padding(.vertical, 12)

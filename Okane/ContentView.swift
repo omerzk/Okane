@@ -248,6 +248,9 @@ struct ContentView: View {
         .onChange(of: store.showUsedCoupons) { _, _ in
             updateFilteredCoupons()
         }
+        .onChange(of: store.selectedStore) { _, _ in
+            updateFilteredCoupons()
+        }
         .preferredColorScheme(store.isDarkMode ? .dark : .light)
     }
     
@@ -377,6 +380,16 @@ struct ContentView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
+            }
+
+            // Store filter
+            if store.availableStores.count > 2 {
+                StoreFilterView(store: store)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
             }
 
             // Scroll offset tracking

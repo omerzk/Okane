@@ -11,6 +11,11 @@
 		9405E37E2E53CA9C008F02AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9405E37D2E53CA9C008F02AB /* Assets.xcassets */; };
 		9405E3812E53CA9C008F02AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9405E3802E53CA9C008F02AB /* Preview Assets.xcassets */; };
 		94AC02A02E57D09F0094C8A9 /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94AC029F2E57D09F0094C8A9 /* AppIntents.framework */; };
+		94B466192EE5A0E20041DFA0 /* UndoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B466142EE5A0E20041DFA0 /* UndoToastView.swift */; };
+		94B4661A2EE5A0E20041DFA0 /* CollapsibleStatsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B466152EE5A0E20041DFA0 /* CollapsibleStatsHeaderView.swift */; };
+		94B4661B2EE5A0E20041DFA0 /* CouponRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B466162EE5A0E20041DFA0 /* CouponRowView.swift */; };
+		94B4661C2EE5A0E20041DFA0 /* OptimizationHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B466172EE5A0E20041DFA0 /* OptimizationHeaderView.swift */; };
+		94B4661D2EE5A0E20041DFA0 /* StoreFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B466182EE5A0E20041DFA0 /* StoreFilterView.swift */; };
 		94BA96672E624CC900DE8C7D /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96662E624CC900DE8C7D /* Color+Theme.swift */; };
 		94BA966C2E624CDC00DE8C7D /* Coupon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96692E624CDC00DE8C7D /* Coupon.swift */; };
 		94BA966D2E624CDC00DE8C7D /* CouponStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA966A2E624CDC00DE8C7D /* CouponStore.swift */; };
@@ -21,10 +26,6 @@
 		94BA968A2E624D3100DE8C7D /* AddCouponIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96892E624D3100DE8C7D /* AddCouponIntent.swift */; };
 		94BA96972E625C9B00DE8C7D /* BulkImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA968C2E625C9B00DE8C7D /* BulkImportView.swift */; };
 		94BA96982E625C9B00DE8C7D /* AddCouponView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA968D2E625C9B00DE8C7D /* AddCouponView.swift */; };
-		94BA96992E625C9B00DE8C7D /* UndoToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA968F2E625C9B00DE8C7D /* UndoToastView.swift */; };
-		94BA969A2E625C9B00DE8C7D /* CollapsibleStatsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96902E625C9B00DE8C7D /* CollapsibleStatsHeaderView.swift */; };
-		94BA969B2E625C9B00DE8C7D /* CouponRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96912E625C9B00DE8C7D /* CouponRowView.swift */; };
-		94BA969C2E625C9B00DE8C7D /* OptimizationHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96922E625C9B00DE8C7D /* OptimizationHeaderView.swift */; };
 		94BA969D2E625C9B00DE8C7D /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96932E625C9B00DE8C7D /* StatsView.swift */; };
 		94BA969E2E625C9B00DE8C7D /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96942E625C9B00DE8C7D /* EmptyStateView.swift */; };
 		94BA969F2E625C9B00DE8C7D /* BarcodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA96952E625C9B00DE8C7D /* BarcodeView.swift */; };
@@ -38,6 +39,11 @@
 		9405E3802E53CA9C008F02AB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9405E3892E54EBC9008F02AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		94AC029F2E57D09F0094C8A9 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
+		94B466142EE5A0E20041DFA0 /* UndoToastView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UndoToastView.swift; sourceTree = "<group>"; };
+		94B466152EE5A0E20041DFA0 /* CollapsibleStatsHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollapsibleStatsHeaderView.swift; sourceTree = "<group>"; };
+		94B466162EE5A0E20041DFA0 /* CouponRowView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CouponRowView.swift; sourceTree = "<group>"; };
+		94B466172EE5A0E20041DFA0 /* OptimizationHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptimizationHeaderView.swift; sourceTree = "<group>"; };
+		94B466182EE5A0E20041DFA0 /* StoreFilterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreFilterView.swift; sourceTree = "<group>"; };
 		94BA96662E624CC900DE8C7D /* Color+Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
 		94BA96692E624CDC00DE8C7D /* Coupon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Coupon.swift; sourceTree = "<group>"; };
 		94BA966A2E624CDC00DE8C7D /* CouponStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CouponStore.swift; sourceTree = "<group>"; };
@@ -48,10 +54,6 @@
 		94BA96892E624D3100DE8C7D /* AddCouponIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddCouponIntent.swift; sourceTree = "<group>"; };
 		94BA968C2E625C9B00DE8C7D /* BulkImportView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BulkImportView.swift; sourceTree = "<group>"; };
 		94BA968D2E625C9B00DE8C7D /* AddCouponView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddCouponView.swift; sourceTree = "<group>"; };
-		94BA968F2E625C9B00DE8C7D /* UndoToastView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UndoToastView.swift; sourceTree = "<group>"; };
-		94BA96902E625C9B00DE8C7D /* CollapsibleStatsHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollapsibleStatsHeaderView.swift; sourceTree = "<group>"; };
-		94BA96912E625C9B00DE8C7D /* CouponRowView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CouponRowView.swift; sourceTree = "<group>"; };
-		94BA96922E625C9B00DE8C7D /* OptimizationHeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptimizationHeaderView.swift; sourceTree = "<group>"; };
 		94BA96932E625C9B00DE8C7D /* StatsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		94BA96942E625C9B00DE8C7D /* EmptyStateView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		94BA96952E625C9B00DE8C7D /* BarcodeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BarcodeView.swift; sourceTree = "<group>"; };
@@ -158,26 +160,19 @@
 		94BA968B2E625C9B00DE8C7D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				94BA96932E625C9B00DE8C7D /* StatsView.swift */,
+				94B466142EE5A0E20041DFA0 /* UndoToastView.swift */,
+				94B466152EE5A0E20041DFA0 /* CollapsibleStatsHeaderView.swift */,
+				94B466162EE5A0E20041DFA0 /* CouponRowView.swift */,
+				94B466172EE5A0E20041DFA0 /* OptimizationHeaderView.swift */,
+				94B466182EE5A0E20041DFA0 /* StoreFilterView.swift */,
 				94BA968C2E625C9B00DE8C7D /* BulkImportView.swift */,
 				94BA968D2E625C9B00DE8C7D /* AddCouponView.swift */,
-				94BA968E2E625C9B00DE8C7D /* Components */,
-				94BA96932E625C9B00DE8C7D /* StatsView.swift */,
 				94BA96942E625C9B00DE8C7D /* EmptyStateView.swift */,
 				94BA96952E625C9B00DE8C7D /* BarcodeView.swift */,
 				94BA96962E625C9B00DE8C7D /* LoadingView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		94BA968E2E625C9B00DE8C7D /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				94BA968F2E625C9B00DE8C7D /* UndoToastView.swift */,
-				94BA96902E625C9B00DE8C7D /* CollapsibleStatsHeaderView.swift */,
-				94BA96912E625C9B00DE8C7D /* CouponRowView.swift */,
-				94BA96922E625C9B00DE8C7D /* OptimizationHeaderView.swift */,
-			);
-			path = Components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,21 +248,22 @@
 				94BA967E2E624CF200DE8C7D /* BarcodeGenerator.swift in Sources */,
 				94BA96672E624CC900DE8C7D /* Color+Theme.swift in Sources */,
 				9405E37C2E53CA99008F02AB /* ContentView.swift in Sources */,
-				94BA969B2E625C9B00DE8C7D /* CouponRowView.swift in Sources */,
+				94B4661B2EE5A0E20041DFA0 /* CouponRowView.swift in Sources */,
 				94BA96972E625C9B00DE8C7D /* BulkImportView.swift in Sources */,
+				94B4661A2EE5A0E20041DFA0 /* CollapsibleStatsHeaderView.swift in Sources */,
 				94BA969F2E625C9B00DE8C7D /* BarcodeView.swift in Sources */,
-				94BA969A2E625C9B00DE8C7D /* CollapsibleStatsHeaderView.swift in Sources */,
 				94BA96A02E625C9B00DE8C7D /* LoadingView.swift in Sources */,
 				94BA968A2E624D3100DE8C7D /* AddCouponIntent.swift in Sources */,
 				94BA969E2E625C9B00DE8C7D /* EmptyStateView.swift in Sources */,
 				94BA966D2E624CDC00DE8C7D /* CouponStore.swift in Sources */,
 				94BA966E2E624CDC00DE8C7D /* CouponError.swift in Sources */,
 				94BA967D2E624CF200DE8C7D /* OrganiqueShapes.swift in Sources */,
-				94BA969C2E625C9B00DE8C7D /* OptimizationHeaderView.swift in Sources */,
-				94BA96992E625C9B00DE8C7D /* UndoToastView.swift in Sources */,
+				94B4661C2EE5A0E20041DFA0 /* OptimizationHeaderView.swift in Sources */,
+				94B466192EE5A0E20041DFA0 /* UndoToastView.swift in Sources */,
 				94BA969D2E625C9B00DE8C7D /* StatsView.swift in Sources */,
 				94BA967F2E624CF200DE8C7D /* NetworkRetryHelper.swift in Sources */,
 				94BA96982E625C9B00DE8C7D /* AddCouponView.swift in Sources */,
+				94B4661D2EE5A0E20041DFA0 /* StoreFilterView.swift in Sources */,
 				94BA966C2E624CDC00DE8C7D /* Coupon.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

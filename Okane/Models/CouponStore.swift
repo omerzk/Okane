@@ -30,6 +30,7 @@ class CouponStore: ObservableObject {
     // UI state management
     @Published var isDarkMode = false
     @Published var showTotals = true // Default to showing values (not censored)
+    @Published var selectedStore: String? = nil // nil means "All Stores"
 
     private let userDefaults = UserDefaults.standard
     private let couponsKey = "saved_coupons"
@@ -37,9 +38,20 @@ class CouponStore: ObservableObject {
     private let showTotalsKey = "show_totals_preference"
     
     var filteredCoupons: [Coupon] {
-            let baseFiltered = showUsedCoupons ? coupons : coupons.filter { !$0.isUsed }
-            return baseFiltered
+        let baseFiltered = showUsedCoupons ? coupons : coupons.filter { !$0.isUsed }
+
+        // Apply store filter if selected
+        if let selectedStore = selectedStore, selectedStore != "All" {
+            return baseFiltered.filter { $0.storeName == selectedStore }
         }
+
+        return baseFiltered
+    }
+
+    var availableStores: [String] {
+        let stores = Set(coupons.compactMap { $0.storeName })
+        return ["All"] + stores.sorted()
+    }
     
     var totalValue: Double {
         return coupons.reduce(0) { $0 + $1.value }
@@ -119,6 +131,7 @@ class CouponStore: ObservableObject {
             userDefaults.set("v2", forKey: "structure_version")
         }
         loadCoupons()
+        migrateExistingCouponsStoreNames()
         loadDarkModePreference()
         loadShowTotalsPreference()
     }
@@ -402,7 +415,7 @@ class CouponStore: ObservableObject {
             #"בסך\s*₪(\d+\.?\d*)"#,
             #"(\d+\.?\d*)\s*₪"#
         ]
-        
+
         for pattern in patterns {
             if let regex = try? NSRegularExpression(pattern: pattern),
                let match = regex.firstMatch(in: message, range: NSRange(message.startIndex..., in: message)) {
@@ -411,8 +424,32 @@ class CouponStore: ObservableObject {
                 return Double(valueString) ?? 0.0
             }
         }
-        
+
         return 0.0
+    }
+
+    private func extractStoreName(from message: String) -> (normalized: String?, display: String?) {
+        // Pattern supports both לצפיה (single yud) and לצפייה (double yud)
+        let pattern = #"לצפיי?ה בשובר\s+([^\s]+(?:\s+[^\s]+)*?)\s+בסך"#
+
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: message, range: NSRange(message.startIndex..., in: message)) else {
+            return (nil, nil)
+        }
+
+        let storeRange = Range(match.range(at: 1), in: message)!
+        let rawStoreName = String(message[storeRange])
+        let normalized = normalizeStoreName(rawStoreName)
+
+        return (normalized: normalized, display: rawStoreName)
+    }
+
+    private func normalizeStoreName(_ rawName: String) -> String {
+        return rawName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: "  ", with: " ")
+            .folding(options: .diacriticInsensitive, locale: .current)
     }
     
     private func fetchCouponData(from urlString: String, originalMessage: String) async throws -> Coupon {
@@ -438,14 +475,17 @@ class CouponStore: ObservableObject {
         }
         
         let value = extractValue(from: originalMessage)
-        
+        let storeInfo = extractStoreName(from: originalMessage)
+
         return Coupon(
             url: urlString,
             barcodeNumber: barcodeInfo.number,
             barcodeImageData: barcodeImageData,
             dateAdded: Date(),
             value: value,
-            originalMessage: originalMessage.isEmpty ? nil : originalMessage
+            originalMessage: originalMessage.isEmpty ? nil : originalMessage,
+            storeName: storeInfo.normalized,
+            storeDisplayName: storeInfo.display
         )
     }
     
@@ -509,7 +549,7 @@ class CouponStore: ObservableObject {
     
     private func loadCoupons() {
         guard let data = userDefaults.data(forKey: couponsKey) else { return }
-        
+
         do {
             let decoded = try JSONDecoder().decode([Coupon].self, from: data)
             coupons = decoded
@@ -518,7 +558,64 @@ class CouponStore: ObservableObject {
             coupons = []
         }
     }
-    
+
+    private func migrateExistingCouponsStoreNames() {
+        print("🔍 Migration starting - Total coupons: \(coupons.count)")
+        var needsSave = false
+        var migratedCount = 0
+        var skippedAlreadyHasStore = 0
+        var skippedNoMessage = 0
+        var failedNoStoreFound = 0
+
+        for i in 0..<coupons.count {
+            if coupons[i].storeName != nil {
+                skippedAlreadyHasStore += 1
+                continue
+            }
+
+            guard let originalMessage = coupons[i].originalMessage else {
+                skippedNoMessage += 1
+                continue
+            }
+
+            print("📝 Processing coupon \(i): '\(originalMessage.prefix(80))...'")
+            let storeInfo = extractStoreName(from: originalMessage)
+            print("   → Extracted: normalized='\(storeInfo.normalized ?? "nil")', display='\(storeInfo.display ?? "nil")'")
+
+            // Create updated coupon with store info
+            if storeInfo.normalized != nil || storeInfo.display != nil {
+                let updatedCoupon = Coupon(
+                    url: coupons[i].url,
+                    barcodeNumber: coupons[i].barcodeNumber,
+                    barcodeImageData: coupons[i].barcodeImageData,
+                    dateAdded: coupons[i].dateAdded,
+                    value: coupons[i].value,
+                    originalMessage: coupons[i].originalMessage,
+                    isUsed: coupons[i].isUsed,
+                    storeName: storeInfo.normalized,
+                    storeDisplayName: storeInfo.display
+                )
+
+                coupons[i] = updatedCoupon
+                migratedCount += 1
+                needsSave = true
+            } else {
+                failedNoStoreFound += 1
+            }
+        }
+
+        print("✅ Migration complete:")
+        print("   - Migrated: \(migratedCount)")
+        print("   - Already had store: \(skippedAlreadyHasStore)")
+        print("   - No originalMessage: \(skippedNoMessage)")
+        print("   - No store found in message: \(failedNoStoreFound)")
+
+        if needsSave {
+            saveCoupons()
+            print("💾 Saved migrated coupons")
+        }
+    }
+
     // MARK: - Dark Mode Management
     private func loadDarkModePreference() {
         isDarkMode = userDefaults.bool(forKey: darkModeKey)
@@ -548,5 +645,10 @@ class CouponStore: ObservableObject {
     func toggleShowTotals() {
         showTotals.toggle()
         saveShowTotalsPreference()
+    }
+
+    // MARK: - Store Filtering
+    func selectStore(_ store: String?) {
+        selectedStore = (store == "All") ? nil : store
     }
 }
